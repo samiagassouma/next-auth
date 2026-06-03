@@ -11,6 +11,12 @@ import {
 } from "@/lib/validation";
 import FormField from "./FormField";
 
+type ForgotPasswordFormProps = {
+  onOtpRequested?: (email: string) => void;
+  method: "email" | "phone" | "whatsapp";
+  onChooseMethod?: () => void;
+};
+
 type FormMessage = {
   type: "success" | "error";
   text: string;
@@ -20,22 +26,32 @@ const initialValues: ForgotPasswordValues = {
   email: "",
 };
 
-export default function ForgotPasswordForm() {
+export default function ForgotPasswordForm({
+  onOtpRequested, method, onChooseMethod
+}: ForgotPasswordFormProps) {
   const [values, setValues] = useState<ForgotPasswordValues>(initialValues);
   const [errors, setErrors] = useState<
     FieldErrors<keyof ForgotPasswordValues>
   >({});
   const [message, setMessage] = useState<FormMessage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   function updateEmail(event: ChangeEvent<HTMLInputElement>) {
-    setValues({ email: event.target.value });
-    setErrors({});
+    const nextValues = { email: event.target.value };
+
+    setValues(nextValues);
+
+    if (hasSubmitted) {
+      setErrors(validateForgotPassword(nextValues));
+    }
+
     setMessage(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setHasSubmitted(true);
 
     const nextErrors = validateForgotPassword(values);
     setErrors(nextErrors);
@@ -49,11 +65,7 @@ export default function ForgotPasswordForm() {
 
     try {
       await forgotPassword(values);
-      setMessage({
-        type: "success",
-        text: "If an account exists, password reset instructions have been sent.",
-      });
-      setValues(initialValues);
+      onOtpRequested?.(values.email.trim().toLowerCase());
     } catch (error) {
       setMessage({
         type: "error",
@@ -70,9 +82,19 @@ export default function ForgotPasswordForm() {
   return (
     <form className="space-y-5" noValidate onSubmit={handleSubmit}>
       <FormField
-        id="email"
-        label="Email"
-        type="email"
+        id={method}
+        label={
+          method === "email"
+            ? "Email"
+            : method === "phone"
+              ? "Phone Number"
+              : "WhatsApp Number"
+        }
+        type={
+          method === "email"
+            ? "email"
+            : "tel"
+        }
         value={values.email}
         onChange={updateEmail}
         error={errors.email}
@@ -84,11 +106,10 @@ export default function ForgotPasswordForm() {
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
-              ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
-              : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-          }`}
+          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
+            ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
+            : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
+            }`}
           role="status"
         >
           {message.text}
@@ -104,9 +125,11 @@ export default function ForgotPasswordForm() {
       </button>
 
       <p className="text-center text-sm text-[#596255]">
-        Remembered your password?{" "}
-        <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/login">
-          Back to login
+        <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/login" onClick={(e) => {
+          e.preventDefault();
+          onChooseMethod?.();
+        }}>
+          Choose a different method
         </Link>
       </p>
     </form>

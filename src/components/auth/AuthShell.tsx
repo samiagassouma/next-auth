@@ -8,6 +8,8 @@ type AuthShellProps = {
   subtitle?: string;
   children: ReactNode;
   image?: string;
+  headingIcon?: string;
+  contentClassName?: string;
 };
 
 export default function AuthShell({
@@ -15,6 +17,8 @@ export default function AuthShell({
   title,
   subtitle,
   image,
+  headingIcon,
+  contentClassName = "max-w-[330px]",
   children,
 }: AuthShellProps) {
   const illustration = image ?? "/signup/signup.png";
@@ -60,28 +64,33 @@ export default function AuthShell({
       </aside>
 
       <section className="flex min-h-screen items-center justify-center px-6 py-9 sm:px-10">
-        <div className="w-full max-w-[330px]">
+        <div className={`w-full ${contentClassName}`}>
           <div className="mb-6 text-center">
             {eyebrow ? (
               <p className="mb-2 text-sm font-semibold uppercase text-[#8f31de]">
                 {eyebrow}
               </p>
             ) : null}
-            <img className="mx-auto mb-4 h-10" src="/forgot-password/email2.png" alt="Email" />
+            {headingIcon ? (
+              <Image
+                alt=""
+                className="mx-auto mb-4 h-10 w-auto"
+                height={40}
+                src={headingIcon}
+                width={40}
+              />
+            ) : null}
             <h1 className="text-[27px] font-bold leading-[1.2] text-[#6a00c2] sm:text-[28px]">
               {title}
             </h1>
             {subtitle ? (
-      <div className="flex items-center gap-3 text-xs text-[#d6b9ee]">
-        <span className="h-px flex-1 bg-[#e8d8f6]" />
-        <span>{subtitle}</span>
-        <span className="h-px flex-1 bg-[#e8d8f6]" />
-      </div>
+              <p className="mt-3 text-base leading-6 text-[#8790a0]">
+                {subtitle}
+              </p>
             ) : null}
           </div>
 
           {children}
-
         </div>
       </section>
     </div>
