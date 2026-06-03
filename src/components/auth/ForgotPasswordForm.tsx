@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type ChangeEvent } from "react";
 import { forgotPassword, getApiErrorMessage } from "@/lib/auth-api";
 import {
@@ -27,7 +26,9 @@ const initialValues: ForgotPasswordValues = {
 };
 
 export default function ForgotPasswordForm({
-  onOtpRequested, method, onChooseMethod
+  onOtpRequested,
+  method,
+  onChooseMethod,
 }: ForgotPasswordFormProps) {
   const [values, setValues] = useState<ForgotPasswordValues>(initialValues);
   const [errors, setErrors] = useState<
@@ -90,11 +91,7 @@ export default function ForgotPasswordForm({
               ? "Phone Number"
               : "WhatsApp Number"
         }
-        type={
-          method === "email"
-            ? "email"
-            : "tel"
-        }
+        type={method === "email" ? "email" : "tel"}
         value={values.email}
         onChange={updateEmail}
         error={errors.email}
@@ -106,10 +103,11 @@ export default function ForgotPasswordForm({
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
-            ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
-            : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-            }`}
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            message.type === "success"
+              ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
+              : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
+          }`}
           role="status"
         >
           {message.text}
@@ -125,12 +123,13 @@ export default function ForgotPasswordForm({
       </button>
 
       <p className="text-center text-sm text-[#596255]">
-        <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/login" onClick={(e) => {
-          e.preventDefault();
-          onChooseMethod?.();
-        }}>
+        <button
+          className="font-semibold text-[#226f68] hover:text-[#185b50]"
+          onClick={onChooseMethod}
+          type="button"
+        >
           Choose a different method
-        </Link>
+        </button>
       </p>
     </form>
   );

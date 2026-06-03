@@ -18,27 +18,40 @@ export default function ForgotPasswordFlow() {
   if (step === "choose-method") {
     return (
       <AuthShell
-        title="Choose Recovery Method"
+        title="Find your Account"
+        subtitle="Choose how you'd like to restore access to your account."
         image="/forgot-password/choose_method.png"
       >
         <div className="flex flex-col gap-4">
-          <button
-            className="btn"
-            onClick={() => { setMethod("email"); setStep("email"); }}
-          >
-            Recover via Email
-          </button>
+          <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
+              <img
+                src="/forgot-password/emailIcon.png"
+                alt="Email"
+                className="h-8 w-8"
+              />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-medium text-purple-700">
+                Email
+              </h3>
+              <p className="text-sm text-gray-400">
+                Code to your inbox
+              </p>
+            </div>
+          </div>
           <button
             className="btn"
             onClick={() => { setMethod("phone"); setStep("email"); }}
           >
-            Recover via Phone
+            Phone
           </button>
           <button
             className="btn"
             onClick={() => { setMethod("whatsapp"); setStep("email"); }}
           >
-            Recover via WhatsApp
+            WhatsApp
           </button>
           <p className="text-center text-sm text-[#596255]">
             <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/login">
