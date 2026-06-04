@@ -11,10 +11,12 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { getApiErrorMessage, resendOtp } from "@/lib/auth-api";
+import { getApiErrorMessage, resendOtp, verifyOtp } from "@/lib/auth-api";
+import type { RecoveryMethod } from "@/lib/validation";
 
 type OtpFormProps = {
-  email: string;
+  identifier: string;
+  method: RecoveryMethod;
 };
 
 const OTP_LENGTH = 6;
@@ -33,7 +35,31 @@ function normalizeOtp(value: string) {
   return value.replace(/\D/g, "").slice(0, OTP_LENGTH);
 }
 
-export default function OtpForm({ email }: OtpFormProps) {
+function getIdentifierParamName(method: RecoveryMethod) {
+  if (method === "email") {
+    return "email";
+  }
+
+  if (method === "phone") {
+    return "phone_number";
+  }
+
+  return "whatsapp_number";
+}
+
+function getWrongIdentifierLabel(method: RecoveryMethod) {
+  if (method === "email") {
+    return "Wrong email?";
+  }
+
+  if (method === "phone") {
+    return "Wrong phone number?";
+  }
+
+  return "Wrong WhatsApp number?";
+}
+
+export default function OtpForm({ identifier, method }: OtpFormProps) {
   const router = useRouter();
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -133,7 +159,7 @@ export default function OtpForm({ email }: OtpFormProps) {
     inputsRef.current[Math.min(pastedOtp.length, OTP_LENGTH) - 1]?.focus();
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setHasSubmitted(true);
 
@@ -143,13 +169,25 @@ export default function OtpForm({ email }: OtpFormProps) {
     if (nextError) {
       return;
     }
+    console.log("Submitting OTP:", otp);
 
-    const params = new URLSearchParams({
-      email,
-      otp,
-    });
+    try {
+      console.log("form submitted with OTP:", otp);
+      const email: string = "gassouma.samia888@esprit.tn";
+      // In a real app, you would verify the OTP here before navigating to the reset password page.
+      console.log("Verifying OTP with backend...", otp, email);
+      //await verifyOtp( otp, email );
+      const params = new URLSearchParams({
+        method,
+        [getIdentifierParamName(method)]: identifier,
+        otp,
+      });
+      router.push(`/reset-password?${params.toString()}`);
+    } catch (submissionError) {
+      setError(getApiErrorMessage(submissionError, "Invalid OTP. Please try again."));
+    }
 
-    router.push(`/reset-password?${params.toString()}`);
+
   }
 
   async function handleResendOtp() {
@@ -157,7 +195,7 @@ export default function OtpForm({ email }: OtpFormProps) {
     setMessage("");
 
     try {
-      await resendOtp({ email });
+      await resendOtp({ method, identifier });
       setSecondsLeft(INITIAL_SECONDS);
       setMessage("A new OTP has been sent.");
     } catch (resendError) {
@@ -188,11 +226,10 @@ export default function OtpForm({ email }: OtpFormProps) {
               <input
                 aria-label={`OTP digit ${index + 1}`}
                 autoComplete={index === 0 ? "one-time-code" : "off"}
-                className={`h-16 w-16 rounded-lg border bg-white text-center text-xl text-[#1a1230] outline-none transition focus:ring-4 sm:h-[66px] sm:w-[88px] ${
-                  error
+                className={`h-16 w-16 rounded-lg border bg-white text-center text-xl text-[#1a1230] outline-none transition focus:ring-4 sm:h-[66px] sm:w-[88px] ${error
                     ? "border-[#ff4b4b] focus:border-[#ff4b4b] focus:ring-[#ff4b4b]/10"
                     : "border-[#b762ec] focus:border-[#7a00c8] focus:ring-[#7a00c8]/10"
-                }`}
+                  }`}
                 inputMode="numeric"
                 maxLength={1}
                 onChange={handleChange(index)}
@@ -224,7 +261,7 @@ export default function OtpForm({ email }: OtpFormProps) {
       ) : null}
 
       <button
-        className="mx-auto flex h-16 w-full max-w-[610px] items-center justify-center rounded-2xl bg-[#7600c6] px-4 text-xl font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20"
+        className="h-11 w-full rounded-2xl bg-[#7600c6] px-4 text-sm font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20 disabled:cursor-not-allowed disabled:bg-[#b990d7]"
         type="submit"
       >
         Verify
@@ -243,7 +280,7 @@ export default function OtpForm({ email }: OtpFormProps) {
       </p>
 
       <p className="text-center text-sm text-[#8790a0]">
-        Wrong email?{" "}
+        {getWrongIdentifierLabel(method)}{" "}
         <Link className="font-semibold text-[#6a00c2]" href="/forgot-password">
           Start again
         </Link>

@@ -14,13 +14,15 @@ export type LoginValues = {
 };
 
 export type ForgotPasswordValues = {
-  email: string;
+  identifier: string;
 };
 
 export type ResetPasswordValues = {
   newPassword: string;
   confirmNewPassword: string;
 };
+
+export type RecoveryMethod = "email" | "phone" | "whatsapp";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,6 +41,21 @@ function validateEmail(email: string) {
 
   if (!EMAIL_PATTERN.test(trimmedEmail)) {
     return "Enter a valid email address.";
+  }
+
+  return undefined;
+}
+
+function validatePhoneNumber(value: string, label: string) {
+  const trimmedValue = value.trim();
+  const digitCount = trimmedValue.replace(/\D/g, "").length;
+
+  if (!trimmedValue) {
+    return "This is a required field";
+  }
+
+  if (!/^\+?[\d\s().-]+$/.test(trimmedValue) || digitCount != 8 ) {
+    return `Enter a valid ${label}.`;
   }
 
   return undefined;
@@ -106,10 +123,20 @@ export function validateLogin(values: LoginValues) {
   return errors;
 }
 
-export function validateForgotPassword(values: ForgotPasswordValues) {
+export function validateForgotPassword(
+  values: ForgotPasswordValues,
+  method: RecoveryMethod = "email",
+) {
   const errors: FieldErrors<keyof ForgotPasswordValues> = {};
 
-  errors.email = validateEmail(values.email);
+  if (method === "email") {
+    errors.identifier = validateEmail(values.identifier);
+  } else {
+    errors.identifier = validatePhoneNumber(
+      values.identifier,
+      method === "phone" ? "phone number" : "WhatsApp number",
+    );
+  }
 
   return errors;
 }

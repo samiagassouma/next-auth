@@ -191,7 +191,10 @@ export default function SignupForm() {
     setMessage(null);
 
     try {
-      await resendOtp({ email: values.email });
+      await resendOtp({
+        method: "email",
+        identifier: values.email,
+      });
       setMessage({
         type: "success",
         text: "A new verification code has been sent.",

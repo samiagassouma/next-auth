@@ -14,15 +14,21 @@ export type LoginPayload = {
   password: string;
 };
 
-export type EmailPayload = {
-  email: string;
+export type RecoveryMethod = "email" | "phone" | "whatsapp";
+
+export type RecoveryPayload = {
+  method: RecoveryMethod;
+  identifier: string;
 };
 
 export type ResetPasswordPayload = {
   newPassword: string;
   confirmNewPassword: string;
+  method?: RecoveryMethod;
   token?: string;
   email?: string;
+  phoneNumber?: string;
+  whatsappNumber?: string;
   uid?: string;
   otp?: string;
 };
@@ -171,28 +177,47 @@ export function login(payload: LoginPayload) {
   });
 }
 
-export function forgotPassword(payload: EmailPayload) {
+function buildRecoveryPayload(payload: RecoveryPayload) {
+  const identifier = payload.identifier.trim();
+
+  if (payload.method === "email") {
+    return {
+      email: identifier.toLowerCase(),
+      method: payload.method,
+    };
+  }
+
+  if (payload.method === "phone") {
+    return {
+      phone_number: identifier,
+      method: payload.method,
+    };
+  }
+
+  return {
+    whatsapp_number: identifier,
+    method: payload.method,
+  };
+}
+
+export function forgotPassword(payload: RecoveryPayload) {
   return request("/api/auth/forgot-password/", {
     method: "POST",
-    body: JSON.stringify({
-      email: payload.email.trim().toLowerCase(),
-    }),
+    body: JSON.stringify(buildRecoveryPayload(payload)),
   });
 }
 
-export function resendOtp(payload: EmailPayload) {
+export function resendOtp(payload: RecoveryPayload) {
   return request("/api/auth/resend-otp/", {
     method: "POST",
-    body: JSON.stringify({
-      email: payload.email.trim().toLowerCase(),
-    }),
+    body: JSON.stringify(buildRecoveryPayload(payload)),
   });
 }
 
 export function resetPassword(payload: ResetPasswordPayload) {
   const body: Record<string, string> = {
     new_password: payload.newPassword,
-    confirm_password: payload.confirmNewPassword,
+    new_password2: payload.confirmNewPassword,
   };
 
   if (payload.token) {
@@ -201,6 +226,18 @@ export function resetPassword(payload: ResetPasswordPayload) {
 
   if (payload.email) {
     body.email = payload.email.trim().toLowerCase();
+  }
+
+  if (payload.phoneNumber) {
+    body.phone_number = payload.phoneNumber.trim();
+  }
+
+  if (payload.whatsappNumber) {
+    body.whatsapp_number = payload.whatsappNumber.trim();
+  }
+
+  if (payload.method) {
+    body.method = payload.method;
   }
 
   if (payload.uid) {
@@ -221,4 +258,20 @@ export function verifyEmail(token: string) {
   return request(`/api/auth/verify-email/${encodeURIComponent(token)}/`, {
     method: "GET",
   });
+}
+
+
+export function verifyOtp(
+  otp: string,
+  email: string
+) {
+  console.log("Verifying OTP with backend...", otp, email);
+
+  return request("/api/auth/forgot-password/", {
+    method: "POST",
+    body: JSON.stringify({
+      otp: otp.trim(),
+      email: email.trim().toLowerCase(),
+    }),
+    })
 }

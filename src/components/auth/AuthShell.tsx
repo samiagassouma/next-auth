@@ -74,10 +74,10 @@ export default function AuthShell({
             {headingIcon ? (
               <Image
                 alt=""
-                className="mx-auto mb-4 h-10 w-auto"
-                height={40}
+                className="mx-auto mb-4 h-auto w-auto"
+                height={300}
                 src={headingIcon}
-                width={40}
+                width={300}
               />
             ) : null}
             <h1 className="text-[27px] font-bold leading-[1.2] text-[#6a00c2] sm:text-[28px]">

@@ -6,13 +6,17 @@ import {
   hasValidationErrors,
   type FieldErrors,
   type ForgotPasswordValues,
+  type RecoveryMethod,
   validateForgotPassword,
 } from "@/lib/validation";
 import FormField from "./FormField";
 
 type ForgotPasswordFormProps = {
-  onOtpRequested?: (email: string) => void;
-  method: "email" | "phone" | "whatsapp";
+  onOtpRequested?: (payload: {
+    method: RecoveryMethod;
+    identifier: string;
+  }) => void;
+  method: RecoveryMethod;
   onChooseMethod?: () => void;
 };
 
@@ -22,7 +26,7 @@ type FormMessage = {
 };
 
 const initialValues: ForgotPasswordValues = {
-  email: "",
+  identifier: "",
 };
 
 export default function ForgotPasswordForm({
@@ -38,13 +42,13 @@ export default function ForgotPasswordForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  function updateEmail(event: ChangeEvent<HTMLInputElement>) {
-    const nextValues = { email: event.target.value };
+  function updateIdentifier(event: ChangeEvent<HTMLInputElement>) {
+    const nextValues = { identifier: event.target.value };
 
     setValues(nextValues);
 
     if (hasSubmitted) {
-      setErrors(validateForgotPassword(nextValues));
+      setErrors(validateForgotPassword(nextValues, method));
     }
 
     setMessage(null);
@@ -54,7 +58,7 @@ export default function ForgotPasswordForm({
     event.preventDefault();
     setHasSubmitted(true);
 
-    const nextErrors = validateForgotPassword(values);
+    const nextErrors = validateForgotPassword(values, method);
     setErrors(nextErrors);
 
     if (hasValidationErrors(nextErrors)) {
@@ -65,8 +69,16 @@ export default function ForgotPasswordForm({
     setMessage(null);
 
     try {
-      await forgotPassword(values);
-      onOtpRequested?.(values.email.trim().toLowerCase());
+      const identifier = values.identifier.trim();
+
+      await forgotPassword({
+        method,
+        identifier,
+      });
+      onOtpRequested?.({
+        method,
+        identifier: method === "email" ? identifier.toLowerCase() : identifier,
+      });
     } catch (error) {
       setMessage({
         type: "error",
@@ -83,7 +95,7 @@ export default function ForgotPasswordForm({
   return (
     <form className="space-y-5" noValidate onSubmit={handleSubmit}>
       <FormField
-        id={method}
+        id="identifier"
         label={
           method === "email"
             ? "Email"
@@ -92,22 +104,27 @@ export default function ForgotPasswordForm({
               : "WhatsApp Number"
         }
         type={method === "email" ? "email" : "tel"}
-        value={values.email}
-        onChange={updateEmail}
-        error={errors.email}
-        autoComplete="email"
-        placeholder="you@example.com"
+        value={values.identifier}
+        onChange={updateIdentifier}
+        error={errors.identifier}
+        autoComplete={method === "email" ? "email" : "tel"}
+        placeholder={
+          method === "email"
+            ? "Email address"
+            : method === "phone"
+              ? "+216 xx xxx xxx"
+              : "+216 xx xxx xxx"
+        }
         required
         disabled={isSubmitting}
       />
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
+          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
               ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
               : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-          }`}
+            }`}
           role="status"
         >
           {message.text}

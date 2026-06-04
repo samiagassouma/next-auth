@@ -6,6 +6,7 @@ import { getApiErrorMessage, resetPassword } from "@/lib/auth-api";
 import {
   hasValidationErrors,
   type FieldErrors,
+  type RecoveryMethod,
   type ResetPasswordValues,
   validateResetPassword,
 } from "@/lib/validation";
@@ -13,7 +14,10 @@ import PasswordField from "./PasswordField";
 
 type ResetPasswordFormProps = {
   token?: string;
+  method?: RecoveryMethod;
   email?: string;
+  phoneNumber?: string;
+  whatsappNumber?: string;
   uid?: string;
   otp?: string;
 };
@@ -30,7 +34,10 @@ const initialValues: ResetPasswordValues = {
 
 export default function ResetPasswordForm({
   token,
+  method,
   email,
+  phoneNumber,
+  whatsappNumber,
   uid,
   otp,
 }: ResetPasswordFormProps) {
@@ -72,7 +79,10 @@ export default function ResetPasswordForm({
       await resetPassword({
         ...values,
         token,
+        method,
         email,
+        phoneNumber,
+        whatsappNumber,
         uid,
         otp,
       });
