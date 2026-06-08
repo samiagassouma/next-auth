@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ChangeEvent, type FormEvent } from "react";
-import { getApiErrorMessage, resendOtp, signup } from "@/lib/auth-api";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  getApiErrorMessage,
+  getSocialAuthUrl,
+  resendOtp,
+  signup,
+} from "@/lib/auth-api";
 import {
   hasValidationErrors,
   type FieldErrors,
@@ -11,6 +16,7 @@ import {
 } from "@/lib/validation";
 import FormField from "./FormField";
 import PasswordField from "./PasswordField";
+import SocialAccount from "./SocialAccount";
 
 type FormMessage = {
   type: "success" | "error";
@@ -44,6 +50,89 @@ const passwordRules = [
   },
 ];
 
+type SocialAuthOption = {
+  id: string;
+  label: string;
+  ariaLabel: string;
+  path: string;
+  iconClassName: string;
+  labelClassName?: string;
+};
+
+const socialAuthOptions: SocialAuthOption[] = [
+  {
+    id: "google",
+    label: "G",
+    ariaLabel: "Continue with Google",
+    path: "/api/auth/google/login/",
+    iconClassName: "bg-[#fff0f0] text-[#4285f4]",
+  },
+  {
+    id: "x",
+    label: "X",
+    ariaLabel: "Continue with X",
+    path: "/api/auth/x/login/",
+    iconClassName: "bg-[#f4f4f4] text-[#4d4d4d]",
+    labelClassName: "font-medium",
+  },
+  {
+    id: "linkedin",
+    label: "in",
+    ariaLabel: "Continue with LinkedIn",
+    path: "/api/auth/linkedin/",
+    iconClassName: "bg-[#e3ebff] text-[#0a66c2]",
+  },
+  {
+    id: "github",
+    label: "GH",
+    ariaLabel: "Continue with GitHub",
+    path: "/api/auth/github/login/",
+    iconClassName: "bg-[#d3d3d3] text-white",
+    labelClassName: "text-[13px]",
+  },
+  {
+    id: "indeed",
+    label: "i",
+    ariaLabel: "Continue with Indeed",
+    path: "/api/auth/indeed/login/",
+    iconClassName: "bg-[#eefaff] text-[#2164f3]",
+  },
+  {
+    id: "behance",
+    label: "Be",
+    ariaLabel: "Continue with Behance",
+    path: "/api/auth/behance/login/",
+    iconClassName: "bg-[#eaf1ff] text-[#1769ff]",
+    labelClassName: "text-[13px]",
+  },
+  {
+    id: "dribbble",
+    label: "Dr",
+    ariaLabel: "Continue with Dribbble",
+    path: "/api/auth/dribbble/",
+    iconClassName: "bg-[#ffeaf3] text-[#ea4c89]",
+    labelClassName: "text-[13px]",
+  },
+  {
+    id: "upwork",
+    label: "Up",
+    ariaLabel: "Continue with Upwork",
+    path: "/api/auth/upwork/",
+    iconClassName: "bg-[#edffe8] text-[#14a800]",
+    labelClassName: "text-[13px]",
+  },
+  {
+    id: "instagram",
+    label: "IG",
+    ariaLabel: "Continue with Instagram",
+    path: "/api/auth/instagram/",
+    iconClassName: "bg-[#ffe9f4] text-[#c13584]",
+    labelClassName: "text-[13px]",
+  },
+];
+
+const primarySocialOptions = socialAuthOptions.slice(0, 3);
+
 function getPasswordScore(password: string) {
   return passwordRules.filter((rule) => rule.test(password)).length;
 }
@@ -67,9 +156,8 @@ function getStrengthColor(score: number) {
 function RuleIcon({ isMet }: { isMet: boolean }) {
   return (
     <span
-      className={`relative inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full ${
-        isMet ? "bg-[#6dcc35]" : "bg-[#8d96a3]"
-      }`}
+      className={`relative inline-flex h-3 w-3 shrink-0 items-center justify-center rounded-full ${isMet ? "bg-[#6dcc35]" : "bg-[#8d96a3]"
+        }`}
     >
       {isMet ? (
         <span className="absolute left-[4px] top-[2px] h-[6px] w-[3px] rotate-45 border-b-2 border-r-2 border-white" />
@@ -83,6 +171,33 @@ function RuleIcon({ isMet }: { isMet: boolean }) {
   );
 }
 
+function SocialAuthButton({
+  option,
+  className,
+  onClick,
+}: {
+  option: SocialAuthOption;
+  className: string;
+  onClick: (option: SocialAuthOption) => void;
+}) {
+  return (
+    <button
+      aria-label={option.ariaLabel}
+      className={`${className} ${option.iconClassName}`}
+      onClick={() => onClick(option)}
+      title={option.ariaLabel}
+      type="button"
+    >
+      <span
+        aria-hidden="true"
+        className={`leading-none ${option.labelClassName ?? ""}`}
+      >
+        {option.label}
+      </span>
+    </button>
+  );
+}
+
 export default function SignupForm() {
   const [values, setValues] = useState<SignupValues>(initialValues);
   const [errors, setErrors] = useState<FieldErrors<keyof SignupValues>>({});
@@ -90,9 +205,32 @@ export default function SignupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
   const passwordScore = getPasswordScore(values.password);
   const activePasswordBars = Math.max(1, passwordScore);
   const passwordStrengthColor = getStrengthColor(passwordScore);
+
+  useEffect(() => {
+    if (!isSocialMenuOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsSocialMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isSocialMenuOpen]);
+
+  function startSocialAuth(option: SocialAuthOption) {
+    window.location.assign(getSocialAuthUrl(option.path));
+  }
 
   function updateField(field: keyof SignupValues) {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -214,23 +352,68 @@ export default function SignupForm() {
 
   return (
     <form className="space-y-4" noValidate onSubmit={handleSubmit}>
-      <div className="flex items-center justify-center gap-4">
-        {[
-          ["G", "Continue with Google"],
-          ["X", "Continue with X"],
-          ["in", "Continue with LinkedIn"],
-          ["...", "More sign-up options"],
-        ].map(([label, ariaLabel]) => (
+      {/* <div className="flex items-center justify-center gap-4">
+        {primarySocialOptions.map((option) => (
+          <SocialAuthButton
+            className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-[0_3px_8px_rgba(38,23,53,0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_5px_12px_rgba(38,23,53,0.18)] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
+            key={option.id}
+            onClick={startSocialAuth}
+            option={option}
+          />
+        ))}
+        <button
+          aria-expanded={isSocialMenuOpen}
+          aria-haspopup="dialog"
+          aria-label="More sign-up options"
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-[#6d6079] shadow-[0_3px_8px_rgba(38,23,53,0.16)] transition hover:-translate-y-0.5 hover:text-[#6a00c2] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
+          onClick={() => setIsSocialMenuOpen(true)}
+          type="button"
+        >
+          ...
+        </button>
+      </div>
+
+      {isSocialMenuOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1b1620]/60 p-4"
+          onClick={() => setIsSocialMenuOpen(false)}
+        >
+          <div
+            aria-labelledby="social-signup-title"
+            aria-modal="true"
+            className="relative w-full max-w-[465px] rounded-2xl bg-white px-8 pb-14 pt-12 shadow-[0_26px_60px_rgba(26,18,48,0.25)] sm:px-12"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
           <button
-            aria-label={ariaLabel}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-[#6d6079] shadow-[0_3px_8px_rgba(38,23,53,0.16)] transition hover:-translate-y-0.5 hover:text-[#6a00c2] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
-            key={ariaLabel}
+            aria-label="Close sign-up options"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-2xl font-bold leading-none text-[#9222e6] transition hover:bg-[#f7ebff] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
+            onClick={() => setIsSocialMenuOpen(false)}
             type="button"
           >
-            {label}
+            x
           </button>
-        ))}
-      </div>
+            <h2
+              className="text-center text-[25px] font-bold leading-tight text-[#6a00c2]"
+              id="social-signup-title"
+            >
+              Join using your account
+            </h2>
+            <div className="mx-auto mt-14 grid max-w-[300px] grid-cols-3 justify-items-center gap-x-10 gap-y-11">
+              {socialAuthOptions.map((option) => (
+                <SocialAuthButton
+                  className="flex h-[52px] w-[52px] items-center justify-center rounded-full text-base font-bold shadow-[0_5px_12px_rgba(38,23,53,0.16)] transition hover:-translate-y-0.5 hover:shadow-[0_9px_18px_rgba(38,23,53,0.18)] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
+                  key={option.id}
+                  onClick={startSocialAuth}
+                  option={option}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null} */}
+
+      <SocialAccount />
 
       <FormField
         id="fullName"
@@ -245,7 +428,7 @@ export default function SignupForm() {
       />
       <FormField
         id="email"
-        label="Email"
+        label="Email Address"
         type="email"
         value={values.email}
         onChange={updateField("email")}
@@ -273,11 +456,10 @@ export default function SignupForm() {
           <div className="mb-3 grid grid-cols-4 gap-3">
             {passwordRules.map((rule, index) => (
               <span
-                className={`h-1 rounded-full ${
-                  index < activePasswordBars
+                className={`h-1 rounded-full ${index < activePasswordBars
                     ? passwordStrengthColor
                     : "bg-[#c7cbd3]"
-                }`}
+                  }`}
                 key={rule.label}
               />
             ))}
@@ -314,10 +496,10 @@ export default function SignupForm() {
       />
 
       <div className="space-y-1">
-        <label className="flex items-start gap-2 text-[11px] leading-5 text-[#6f6778]">
+        <label className="flex items-start gap-2 text-[13px] leading-5 text-[#6f6778]">
           <input
             checked={values.termsAccepted}
-            className="mt-0.5 h-5 w-5 rounded border-[#9d6fea] accent-[#8f5ee6] focus:ring-[#7a00c8]"
+            className="mt-0.5 scale-120 rounded border-[#9d6fea] accent-[#8f5ee6] focus:ring-[#7a00c8]"
             disabled={isSubmitting}
             id="termsAccepted"
             name="termsAccepted"
@@ -345,11 +527,10 @@ export default function SignupForm() {
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
+          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
               ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
               : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-          }`}
+            }`}
           role="status"
         >
           {message.text}
@@ -363,24 +544,25 @@ export default function SignupForm() {
       >
         {isSubmitting ? "Creating account..." : "Continue"}
       </button>
+      <div className="space-y-2">
+        {message?.type === "success" ? (
+          <button
+            type="button"
+            onClick={handleResendOtp}
+            disabled={isSubmitting || isResending}
+            className="h-10 w-full rounded-2xl border border-[#e8d8f6] px-4 text-xs font-bold text-[#6a00c2] transition hover:bg-[#f8edff] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10 disabled:cursor-not-allowed disabled:text-[#9b8fa8]"
+          >
+            {isResending ? "Sending..." : "Resend verification code"}
+          </button>
+        ) : null}
 
-      {message?.type === "success" ? (
-        <button
-          type="button"
-          onClick={handleResendOtp}
-          disabled={isSubmitting || isResending}
-          className="h-10 w-full rounded-2xl border border-[#e8d8f6] px-4 text-xs font-bold text-[#6a00c2] transition hover:bg-[#f8edff] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10 disabled:cursor-not-allowed disabled:text-[#9b8fa8]"
-        >
-          {isResending ? "Sending..." : "Resend verification code"}
-        </button>
-      ) : null}
-
-      <p className="text-sm text-[#7f718a]">
-        Already have an account?{" "}
-        <Link className="font-bold text-[#6a00c2] hover:text-[#50008f]" href="/login">
-          Login
-        </Link>
-      </p>
+        <p className="text-sm text-[#768271]">
+          Already have an account?{" "}
+          <Link className="font-bold text-[#6a00c2] hover:text-[#50008f]" href="/login">
+            Login
+          </Link>
+        </p>
+      </div>
     </form>
   );
 }

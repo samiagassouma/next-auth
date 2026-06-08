@@ -11,6 +11,7 @@ import {
 } from "@/lib/validation";
 import FormField from "./FormField";
 import PasswordField from "./PasswordField";
+import SocialAccount from "./SocialAccount";
 
 type FormMessage = {
   type: "success" | "error";
@@ -73,10 +74,11 @@ export default function LoginForm() {
   }
 
   return (
-    <form className="space-y-5" noValidate onSubmit={handleSubmit}>
+    <form className="space-y-7" noValidate onSubmit={handleSubmit}>
+      <SocialAccount />
       <FormField
         id="email"
-        label="Email"
+        label="Email Address"
         type="email"
         value={values.email}
         onChange={updateField("email")}
@@ -98,13 +100,19 @@ export default function LoginForm() {
         disabled={isSubmitting}
       />
 
-      <div className="flex justify-between">
-        <input type="checkbox" id="remember-me" />
-        <label htmlFor="remember-me" className="text-sm font-semibold text-[#226f68] hover:text-[#185b50]">
-          Remember me
-        </label>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <input
+            id="remember-me"
+            type="checkbox"
+            className="h-6 w-6 rounded-md accent-[#BD58FF] scale-80"
+          />
+          <label htmlFor="remember-me" className="text-sm font-medium text-[#000000] hover:text-[#185b50]">
+            Remember me
+          </label>
+        </div>
         <Link
-          className="text-sm font-semibold text-[#226f68] hover:text-[#185b50]"
+          className="text-sm font-semibold text-[#768271] hover:text-[#185b50]"
           href="/forgot-password"
         >
           Forgot your password?
@@ -113,32 +121,32 @@ export default function LoginForm() {
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
-              ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
-              : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-          }`}
+          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
+            ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
+            : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
+            }`}
           role="status"
         >
           {message.text}
         </div>
       ) : null}
+      <div className="space-y-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-11 w-full rounded-2xl bg-[#7600c6] px-4 text-sm font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20 disabled:cursor-not-allowed disabled:bg-[#b990d7]"
+        >
+          {isSubmitting ? "Signing in..." : "Login"}
+        </button>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="h-11 w-full rounded-2xl bg-[#7600c6] px-4 text-sm font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20 disabled:cursor-not-allowed disabled:bg-[#b990d7]"
-      >
-        {isSubmitting ? "Signing in..." : "Login"}
-      </button>
 
-
-      <p className="text-center text-sm text-[#596255]">
-       Don&rsquo;t have an account?{" "}
-        <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/signup">
-          Sign up
-        </Link>
-      </p>
+        <p className="text-sm text-[#768271]">
+          Don&rsquo;t have an account?{" "}
+          <Link className="font-bold text-[#6a00c2] hover:text-[#50008f]" href="/signup">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </form>
   );
 }

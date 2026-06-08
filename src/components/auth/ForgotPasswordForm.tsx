@@ -78,6 +78,7 @@ export default function ForgotPasswordForm({
       onOtpRequested?.({
         method,
         identifier: method === "email" ? identifier.toLowerCase() : identifier,
+
       });
     } catch (error) {
       setMessage({
@@ -122,8 +123,8 @@ export default function ForgotPasswordForm({
       {message ? (
         <div
           className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
-              ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
-              : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
+            ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
+            : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
             }`}
           role="status"
         >
@@ -139,15 +140,16 @@ export default function ForgotPasswordForm({
         {isSubmitting ? "Verifying..." : "Verify"}
       </button>
 
-      <p className="text-center text-sm text-[#596255]">
+      <div className="flex justify-center">
         <button
-          className="font-semibold text-[#226f68] hover:text-[#185b50]"
-          onClick={onChooseMethod}
           type="button"
+          onClick={onChooseMethod}
+          className="inline-flex items-center gap-2 rounded-full border border-[#C084FC] bg-white px-6 py-2 text-sm font-medium text-[#6D28D9] transition-colors hover:bg-purple-50"
         >
-          Choose a different method
+          <span>←</span>
+          <span>Choose a different method</span>
         </button>
-      </p>
+      </div>
     </form>
   );
 }

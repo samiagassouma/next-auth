@@ -18,7 +18,7 @@ export default function AuthShell({
   subtitle,
   image,
   headingIcon,
-  contentClassName = "max-w-[330px]",
+  contentClassName = "max-w-[350px]",
   children,
 }: AuthShellProps) {
   const illustration = image ?? "/signup/signup.png";
@@ -30,35 +30,37 @@ export default function AuthShell({
           <Image alt="Logo" height={32} src="/logo.png" width={82} />
         </Link>
 
-        <div className="absolute left-7 top-[21%] z-10 w-32 rounded-lg bg-[#ad56f4] px-4 py-5 text-white shadow-[0_18px_30px_rgba(122,0,200,0.18)]">
+        <div className="absolute left-7 top-[25%] z-10 rounded-2xl bg-[#BD58FF] px-5 py-5 text-white shadow-[0_18px_30px_rgba(122,0,200,0.18)]">
           <div className="mb-4 flex h-10 items-end gap-2">
             <span className="h-4 w-1.5 rounded-full bg-white/30" />
-            <span className="h-6 w-1.5 rounded-full bg-white/45" />
-            <span className="h-8 w-1.5 rounded-full bg-white/70" />
-            <span className="h-10 w-1.5 rounded-full bg-white" />
+            <span className="h-6 w-1.5 rounded-full bg-white" />
+            <span className="h-6 w-1.5 rounded-full bg-white/30" />
+            <span className="h-8 w-1.5 rounded-full bg-white" />
           </div>
           <p className="text-lg font-bold leading-none">100K+</p>
           <p className="mt-2 text-sm leading-4 text-white/90">People got hired</p>
         </div>
 
-        <div className="relative mx-auto mt-20 flex h-[560px] w-full max-w-[510px] items-center justify-center">
-          <div>
+        <div className="relative mx-auto flex h-[600px] w-full max-w-[500px] max-h-[600px] items-center justify-end">
+          <div className="relative h-[450px] w-full">
             <Image
               src={illustration}
               alt=""
               fill
-              sizes="(min-width: 1024px) 510px, 100vw"
               className="object-contain"
             />
           </div>
 
-          <div className="absolute bottom-2 right-4 z-30 w-[215px] rounded-lg bg-[#b554f4] px-5 py-4 text-white shadow-[0_18px_28px_rgba(122,0,200,0.2)]">
+          <div className="absolute bottom-2 right-12 z-30 w-[215px] rounded-2xl bg-[#BD58FF] px-5 pt-4 text-white shadow-[0_18px_28px_rgba(122,0,200,0.2)]">
             <div className="absolute -top-7 right-8 h-14 w-14 rounded-full border-[6px] border-white bg-[#f0d7ff]" />
-            <p className="text-sm font-bold">Adam Sandler</p>
+            <p className="text-xs font-bold">Adam Sandler</p>
             <p className="mt-1 text-xs text-white/85">Lead Engineer at Canva</p>
-            <p className="mt-4 text-sm font-semibold leading-5">
-              &quot;Great platform for Position seekers.&quot;
-            </p>
+            <div className="flex text-5xl items-start gap-2 space-y-2 mt-2">
+              <p className="text- font-bold">“</p>
+              <p className="text-sm font-medium leading-5">
+                &quot;Great platform for Position seekers.&quot;
+              </p>
+            </div>
           </div>
         </div>
       </aside>

@@ -11,6 +11,8 @@ import {
   validateResetPassword,
 } from "@/lib/validation";
 import PasswordField from "./PasswordField";
+import { useRouter } from "next/navigation";
+import PasswordValidation from "./PasswordValidation";
 
 type ResetPasswordFormProps = {
   token?: string;
@@ -47,6 +49,8 @@ export default function ResetPasswordForm({
   >({});
   const [message, setMessage] = useState<FormMessage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const router = useRouter();
 
   function updateField(field: keyof ResetPasswordValues) {
     return (event: ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +95,7 @@ export default function ResetPasswordForm({
         text: "Your password has been reset.",
       });
       setValues(initialValues);
+      router.push("/password-updated");
     } catch (error) {
       setMessage({
         type: "error",
@@ -102,6 +107,9 @@ export default function ResetPasswordForm({
     } finally {
       setIsSubmitting(false);
     }
+
+
+
   }
 
   return (
@@ -117,9 +125,10 @@ export default function ResetPasswordForm({
         required
         disabled={isSubmitting}
       />
+      <PasswordValidation password={values.newPassword} />
       <PasswordField
         id="confirmNewPassword"
-        label="Confirm new password"
+        label="Confirm password"
         value={values.confirmNewPassword}
         onChange={updateField("confirmNewPassword")}
         error={errors.confirmNewPassword}
@@ -131,11 +140,10 @@ export default function ResetPasswordForm({
 
       {message ? (
         <div
-          className={`rounded-lg border px-4 py-3 text-sm ${
-            message.type === "success"
-              ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
-              : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
-          }`}
+          className={`rounded-lg border px-4 py-3 text-sm ${message.type === "success"
+            ? "border-[#b8d8ca] bg-[#edf8f2] text-[#185b50]"
+            : "border-[#f1b9af] bg-[#fff0ed] text-[#9f2f27]"
+            }`}
           role="status"
         >
           {message.text}

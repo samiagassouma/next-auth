@@ -40,14 +40,17 @@ export default function ForgotPasswordFlow() {
   const [step, setStep] = useState<FlowStep>("choose-method");
   const [identifier, setIdentifier] = useState("");
   const [method, setMethod] = useState<RecoveryMethod>("email");
+  const [email, setEmail] = useState("");
 
+  console.log("identity", { identifier, method });
   if (step === "choose-method") {
     return (
       <AuthShell
         title="Find your Account"
         image="/forgot-password/choose_method.png"
+        subtitle="Choose how you'd like to restore access to your account."
       >
-        <div className="mx-auto flex w-full max-w-[270px] flex-col gap-4">
+        <div className="mx-auto flex w-full max-w-[300px] flex-col gap-4">
           {recoveryOptions.map((option) => (
             <button
               className="flex h-[82px] w-full items-center gap-4 rounded-2xl bg-white px-4 text-left shadow-[0_2px_12px_rgba(30,18,55,0.11)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(30,18,55,0.14)] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/10"
@@ -78,11 +81,25 @@ export default function ForgotPasswordFlow() {
             </button>
           ))}
 
-          <p className="text-center text-sm text-[#596255]">
-            <Link className="font-semibold text-[#226f68] hover:text-[#185b50]" href="/login">
+          <div className="flex justify-center">
+            <Link className="inline-flex items-center gap-1 text-sm font-medium text-[#6a00c2] hover:bg-purple-50" href="/login">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5" />
+                <path d="M12 19L5 12L12 5" />
+              </svg>
               Back To Login
             </Link>
-          </p>
+          </div>
+
         </div>
       </AuthShell>
     );

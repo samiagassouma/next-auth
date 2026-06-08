@@ -41,7 +41,7 @@ export default function PasswordField({
 
   return (
     <div className="space-y-2">
-      <label className="block text-xs font-bold text-[#6a00c2]" htmlFor={id}>
+      <label className="block text-sm font-bold text-[#6a00c2]" htmlFor={id}>
         {label}
       </label>
       <div className="relative">

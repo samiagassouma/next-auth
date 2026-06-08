@@ -86,6 +86,10 @@ export default function OtpForm({ identifier, method }: OtpFormProps) {
   function validateOtp(nextDigits = digits) {
     const code = nextDigits.join("");
 
+    if(!code) {
+      return "OTP is required";
+    }
+
     if (code.length !== OTP_LENGTH || !/^\d{6}$/.test(code)) {
       return "Invalid Code";
     }
@@ -173,10 +177,10 @@ export default function OtpForm({ identifier, method }: OtpFormProps) {
 
     try {
       console.log("form submitted with OTP:", otp);
-      const email: string = "gassouma.samia888@esprit.tn";
+      const email: string = identifier;
       // In a real app, you would verify the OTP here before navigating to the reset password page.
       console.log("Verifying OTP with backend...", otp, email);
-      //await verifyOtp( otp, email );
+      await verifyOtp( {otp, email} );
       const params = new URLSearchParams({
         method,
         [getIdentifierParamName(method)]: identifier,
@@ -226,7 +230,7 @@ export default function OtpForm({ identifier, method }: OtpFormProps) {
               <input
                 aria-label={`OTP digit ${index + 1}`}
                 autoComplete={index === 0 ? "one-time-code" : "off"}
-                className={`h-16 w-16 rounded-lg border bg-white text-center text-xl text-[#1a1230] outline-none transition focus:ring-4 sm:h-[66px] sm:w-[88px] ${error
+                className={`h-14 w-14 rounded-lg border bg-white text-center text-xl text-[#1a1230] outline-none transition focus:ring-4 sm:h-12 sm:w-16 ${error
                     ? "border-[#ff4b4b] focus:border-[#ff4b4b] focus:ring-[#ff4b4b]/10"
                     : "border-[#b762ec] focus:border-[#7a00c8] focus:ring-[#7a00c8]/10"
                   }`}
@@ -252,7 +256,7 @@ export default function OtpForm({ identifier, method }: OtpFormProps) {
         ) : null}
       </div>
 
-      <p className="text-center text-4xl font-medium text-[#8790a0]">
+      <p className="text-center text-2xl font-medium text-[#8790a0]">
         {formatTime(secondsLeft)}
       </p>
 
@@ -261,13 +265,13 @@ export default function OtpForm({ identifier, method }: OtpFormProps) {
       ) : null}
 
       <button
-        className="h-11 w-full rounded-2xl bg-[#7600c6] px-4 text-sm font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20 disabled:cursor-not-allowed disabled:bg-[#b990d7]"
+        className="mx-auto block h-11 w-[400px] rounded-2xl bg-[#7600c6] px-4 text-sm font-bold text-white shadow-[0_8px_16px_rgba(118,0,198,0.24)] transition hover:bg-[#5e009f] focus:outline-none focus:ring-4 focus:ring-[#7a00c8]/20 disabled:cursor-not-allowed disabled:bg-[#b990d7]"
         type="submit"
       >
         Verify
       </button>
 
-      <p className="text-center text-xl text-[#333d4f]">
+      <p className="text-center text-sm text-[#333d4f]">
         Didn&apos;t receive code?{" "}
         <button
           className="font-bold text-[#7a33d1] hover:text-[#5e009f] disabled:cursor-not-allowed disabled:text-[#a8a0b5]"

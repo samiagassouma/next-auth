@@ -50,6 +50,10 @@ function buildUrl(path: string) {
   return `${API_BASE_URL ?? ""}${normalizedPath}`;
 }
 
+export function getSocialAuthUrl(path: string) {
+  return buildUrl(path);
+}
+
 async function readResponse(response: Response) {
   if (response.status === 204) {
     return null;
@@ -261,10 +265,11 @@ export function verifyEmail(token: string) {
 }
 
 
-export function verifyOtp(
+export function verifyOtp( payload: {
   otp: string,
   email: string
-) {
+}) {
+  const { otp, email } = payload;
   console.log("Verifying OTP with backend...", otp, email);
 
   return request("/api/auth/forgot-password/", {
